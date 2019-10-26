@@ -18,7 +18,7 @@ using namespace std::chrono_literals;
 void foo() {
   while(true){
     this_coro::wait(5s);
-    std::cout << "Hi, i loop every 5 seconds from thread id: "
+    std::cout << "Hi, I loop every 5 seconds from thread id: "
             << std::this_thread::get_id() << std::endl;
   }
 }
@@ -26,7 +26,7 @@ void foo() {
 void bar(int time) {
   while (true) {
     this_coro::wait(std::chrono::seconds(time));
-    std::cout << "Hi, i loop every " << time << " seconds from thread id: "
+    std::cout << "Hi, I loop every " << time << " seconds from thread id: "
             << std::this_thread::get_id() << std::endl;
   }
 }
@@ -39,6 +39,6 @@ int main() {
 
   while (true) {
     instance.process();
-   }
+  }
 }
 ```
