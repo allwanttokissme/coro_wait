@@ -11,14 +11,14 @@ void running_coro::operator()() {
     else {
         context = boost::context::callcc(
             [&](ctx::continuation&& sink) {
-                context = std::move(sink);
+            context = std::move(sink);
 
-                _coroutine();
+            _coroutine();
 
-                is_completed = true;
+            is_completed = true;
 
-                return std::move(context);
-            });
+            return std::move(context);
+        });
     }
 }
 
@@ -28,37 +28,35 @@ coro_wait::coro_wait(std::initializer_list<coro_t> coroutines) {
     }
 }
 
-void coro_wait::add_to_queue(coro_t coroutine){
+void coro_wait::add_to_queue(coro_t coroutine) {
     std::lock_guard guard(_mutex);
 
     _task_queue.emplace_back(coroutine);
 }
 
-size_t coro_wait::task_count(){
+size_t coro_wait::task_count() {
     std::lock_guard guard(_mutex);
 
-    return std::count_if(_task_queue.begin(), _task_queue.end(), 
-            [](const running_coro &a){ 
-                return !a.is_completed;
-            });
+    return std::count_if(_task_queue.begin(), _task_queue.end(),
+        [](const running_coro& a) {
+        return !a.is_completed;
+    });
 }
 
-void coro_wait::process(){
+void coro_wait::process() {
     std::lock_guard guard(_mutex);
 
     for (auto& task : _task_queue) {
-    if(std::chrono::steady_clock::now() > task.wake_time)
-        task();
+        if (std::chrono::steady_clock::now() > task.wake_time)
+            task();
     }
 
-    auto it = std::remove_if(_task_queue.begin(), _task_queue.end(), 
-            [](const running_coro& a){
-                return a.is_completed;
-            });
-    _task_queue.erase(it, _task_queue.end());
+    _task_queue.remove_if(
+        [](const running_coro& a) {
+        return a.is_completed;
+    });
 }
 
 namespace this_coro::detail {
-    std::map<std::thread::id, running_coro *> coroutines;
+    std::map<std::thread::id, running_coro*> coroutines;
 }
-
